@@ -14,25 +14,38 @@ public class TicTacToe  implements ActionListener{
 	JButton[] buttons = new JButton[9];
 	boolean player1_turn;
 	
+	// side menu -------------------------------------------------------------
+	JPanel right_panel = new JPanel(); // new panel for buttons and reset
+	JButton[] right_buttons = new JButton[5]; // right panel buttons
+	JButton new_Game_Button = new JButton("New Game");
+	JLabel player_X_Wins = new JLabel("Player X wins: 0"); // Tally for player 1
+	JLabel player_O_Wins = new JLabel("Player O wins: 0"); // Tally for player 2
+	int player_X_Score = 0;
+    int player_O_Score = 0;
+	
+
 	
 	TicTacToe(){
 		
+		// the main window --------------------------------------------
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(800, 800);
 		frame.getContentPane().setBackground(new Color(50,50,50));
 		frame.setLayout(new BorderLayout());
 		frame.setVisible(true);
 		
+		// title ------------------------------------------------------
 		textfield.setBackground(new Color(25,25,25));
 		textfield.setForeground(new Color(25,255,0));
 		textfield.setFont(new Font("Ink Free", Font.BOLD, 75));
 		textfield.setHorizontalAlignment(JLabel.CENTER);
-		textfield.setText("Tic-Tac-Toe");
+		textfield.setText("Tic-Tac-Toe"); 
 		textfield.setOpaque(true);
 		
 		title_panel.setLayout(new BorderLayout());
 		title_panel.setBounds(0,0,800,100);
 		
+		// makes the buttons for the Tic-Tac-Toe game ----------------
 		button_panel.setLayout(new GridLayout(3,3));
 		button_panel.setBackground(new Color(150,150,150));
 		
@@ -40,9 +53,27 @@ public class TicTacToe  implements ActionListener{
 			buttons[i] = new JButton();
 			button_panel.add(buttons[i]);
 			buttons[i].setFont(new Font("MV Boli", Font.BOLD, 120));
+			buttons[i].setBackground(new Color(220,220,220));
 			buttons[i].setFocusable(false);
 			buttons[i].addActionListener(this);
 		}
+		
+		// side menu ------------------------------------------------
+		  // Setup for the right panel
+        right_panel.setLayout(new BoxLayout(right_panel, BoxLayout.Y_AXIS));
+        right_panel.setBackground(new Color(150, 150, 150));
+        right_panel.add(player_X_Wins);
+        right_panel.add(player_O_Wins);
+        for (int i = 0; i < 5; i++) {
+            right_buttons[i] = new JButton("Button " + (i + 1));
+            right_buttons[i].addActionListener(this);
+            right_panel.add(right_buttons[i]);
+        }
+        new_Game_Button.addActionListener(this);
+        right_panel.add(new_Game_Button);
+
+        // Modify the main frame layout to include the right panel
+        frame.add(right_panel, BorderLayout.EAST);
 		
 		title_panel.add(textfield);
 		frame.add(title_panel,BorderLayout.NORTH);
@@ -59,15 +90,16 @@ public class TicTacToe  implements ActionListener{
 				if (player1_turn) {
 					if (buttons[i].getText()=="") {
 						buttons[i].setForeground(new Color(255,0,0));
-						buttons[i].setText("O");
+						buttons[i].setText("X");
 						player1_turn=false;
 						textfield.setText("O turn");
 						check();
 					}
-				}else {
+				}
+				else {
 					if (buttons[i].getText()=="") {
 						buttons[i].setForeground(new Color(0,0,255));
-						buttons[i].setText("X");
+						buttons[i].setText("O");
 						player1_turn=true;
 						textfield.setText("X turn");
 						check();
@@ -75,6 +107,11 @@ public class TicTacToe  implements ActionListener{
 				}
 			}
 		}
+		// Add code to handle clicks on the right panel buttons and reset button
+        if (e.getSource() == new_Game_Button) {
+            new_Game();
+        }
+       
 		
 	}
 
@@ -89,12 +126,26 @@ public class TicTacToe  implements ActionListener{
 		
 		if(random.nextInt(2)==0) {
 			player1_turn = true;
-			textfield.setText("O turn");
+			textfield.setText("X turn");
 		}else {
 			player1_turn = false;
-			textfield.setText("X turn");
+			textfield.setText("O turn");
 		}
 	}
+	
+	// Reset game
+    public void new_Game() {
+        // Reset the game state
+        for (int i = 0; i < 9; i++) {
+            buttons[i].setText("");
+            buttons[i].setEnabled(true);
+            buttons[i].setBackground(new Color(220,220,220));
+            
+        }
+        player1_turn = true;
+        textfield.setText("X turn");
+        
+    }
 	
 	public void check() {
 		//check X win conditions
@@ -241,6 +292,8 @@ public class TicTacToe  implements ActionListener{
 			buttons[i].setEnabled(false);
 		}
 		textfield.setText("X wins");
+		 player_X_Score++;
+	     player_X_Wins.setText("Player X Wins: " + player_X_Score);
 	}
 	
 public void oWins(int a, int b, int c) {
@@ -253,6 +306,9 @@ public void oWins(int a, int b, int c) {
 			buttons[i].setEnabled(false);
 		}
 		textfield.setText("O wins");
+		 player_O_Score++;
+	     player_O_Wins.setText("Player X Wins: " + player_O_Score);
 	}
+
 	
 }
