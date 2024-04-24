@@ -142,6 +142,14 @@ public class TicTacToe implements ActionListener {
             new_Game();
         }
 
+        // depth ------------------------------------------------
+        for (int i = 0; i < 8; i++) {
+        	if (e.getSource() == depthButtons[i]) {
+        		currentDepth = i + 1;
+        		textfield.setText("Depth set to " + currentDepth);
+        	}
+        }
+
         // Minimax AI's turn
         if (isMinimaxMode && !player1_turn) {
             int[][] boardState = convertToBoardState();
@@ -150,13 +158,6 @@ public class TicTacToe implements ActionListener {
             makeMove(bestMove);
         }
         
-        // depth ------------------------------------------------
-        for (int i = 0; i < 8; i++) {
-            if (e.getSource() == depthButtons[i]) {
-                currentDepth = i + 1;
-                textfield.setText("Depth set to " + currentDepth);
-            }
-        }
     }
 
     // Reset game
