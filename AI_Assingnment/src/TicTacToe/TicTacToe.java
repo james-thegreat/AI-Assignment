@@ -141,7 +141,6 @@ public class TicTacToe implements ActionListener {
         if (e.getSource() == new_Game_Button) {
             new_Game();
         }
-
         // depth ------------------------------------------------
         for (int i = 0; i < 8; i++) {
         	if (e.getSource() == depthButtons[i]) {
