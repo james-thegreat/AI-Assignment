@@ -13,26 +13,34 @@ public class TicTacToe implements ActionListener {
     JButton[] buttons = new JButton[9];
     boolean player1_turn;
 
-    // Side menu -------------------------------------------------------------
-    JPanel right_panel = new JPanel(); // New panel for buttons and reset
-    JButton[] right_buttons = new JButton[5]; // Right panel buttons
+    // Side menu
+    JPanel right_panel = new JPanel();
+    JButton[] right_buttons = new JButton[5];
     JButton new_Game_Button = new JButton("New Game");
     JButton playAsXButton = new JButton("Play as X");
     JButton playAsOButton = new JButton("Play as O");
-    JLabel player_X_Wins = new JLabel("Player X wins: 0"); // Tally for player 1
-    JLabel player_O_Wins = new JLabel("Player O wins: 0"); // Tally for player 2
+    JLabel player_X_Wins = new JLabel("Player X wins: 0");
+    JLabel player_O_Wins = new JLabel("Player O wins: 0");
     int player_X_Score = 0;
     int player_O_Score = 0;
 
+    // Minimax button
+    JButton playAsMinimaxButton = new JButton("Play as Minimax");
+    boolean isMinimaxMode = false;
+
     TicTacToe() {
-        // The main window --------------------------------------------
+        // MiniMax button setup
+        right_panel.add(playAsMinimaxButton);
+        playAsMinimaxButton.addActionListener(this);
+
+        // Main window setup
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 800);
         frame.getContentPane().setBackground(new Color(50, 50, 50));
         frame.setLayout(new BorderLayout());
         frame.setVisible(true);
 
-        // Title ------------------------------------------------------
+        // Title setup
         textfield.setBackground(new Color(25, 25, 25));
         textfield.setForeground(new Color(25, 255, 0));
         textfield.setFont(new Font("Ink Free", Font.BOLD, 75));
@@ -43,7 +51,7 @@ public class TicTacToe implements ActionListener {
         title_panel.setLayout(new BorderLayout());
         title_panel.setBounds(0, 0, 800, 100);
 
-        // Makes the buttons for the Tic-Tac-Toe game ----------------
+        // Button panel setup
         button_panel.setLayout(new GridLayout(3, 3));
         button_panel.setBackground(new Color(150, 150, 150));
 
@@ -56,8 +64,7 @@ public class TicTacToe implements ActionListener {
             buttons[i].addActionListener(this);
         }
 
-        // Side menu ------------------------------------------------
-        // Setup for the right panel
+        // Right panel setup
         right_panel.setLayout(new BoxLayout(right_panel, BoxLayout.Y_AXIS));
         right_panel.setBackground(new Color(150, 150, 150));
         right_panel.add(player_X_Wins);
@@ -84,45 +91,57 @@ public class TicTacToe implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Handle clicks on the new buttons
+        // MiniMax button action
+        if (e.getSource() == playAsMinimaxButton) {
+            isMinimaxMode = true;
+            textfield.setText("Minimax turn");
+        }
+
+        // Player selection buttons action
         if (e.getSource() == playAsXButton) {
-            player1_turn = true; // Player 1 (X) goes first
+            player1_turn = true;
             textfield.setText("X turn");
         } else if (e.getSource() == playAsOButton) {
-            player1_turn = false; // Player 2 (O) goes first
+            player1_turn = false;
             textfield.setText("O turn");
         }
 
+        // Game buttons action
         for (int i = 0; i < 9; i++) {
             if (e.getSource() == buttons[i]) {
-                if (player1_turn) {
-                    if (buttons[i].getText().equals("")) {
+                if (buttons[i].getText().equals("")) {
+                    if (player1_turn) {
                         buttons[i].setForeground(new Color(255, 0, 0));
                         buttons[i].setText("X");
                         player1_turn = false;
                         textfield.setText("O turn");
-                        check();
-                    }
-                } else {
-                    if (buttons[i].getText().equals("")) {
+                    } else {
                         buttons[i].setForeground(new Color(0, 0, 255));
                         buttons[i].setText("O");
                         player1_turn = true;
                         textfield.setText("X turn");
-                        check();
                     }
+                    check();
                 }
             }
         }
-        // Add code to handle clicks on the right panel buttons and reset button
+
+        // New game button action
         if (e.getSource() == new_Game_Button) {
             new_Game();
+        }
+
+        // Minimax AI's turn
+        if (isMinimaxMode && !player1_turn) {
+            int[][] boardState = convertToBoardState();
+            MiniMax minimax = new MiniMax(boardState);
+            int bestMove = minimax.getBestMove(); // You need to implement this method
+            makeMove(bestMove); // You need to implement this method
         }
     }
 
     // Reset game
     public void new_Game() {
-        // Reset the game state
         for (int i = 0; i < 9; i++) {
             buttons[i].setText("");
             buttons[i].setEnabled(true);
@@ -185,6 +204,32 @@ public class TicTacToe implements ActionListener {
         textfield.setText("O wins");
         player_O_Score++;
         player_O_Wins.setText("Player O Wins: " + player_O_Score);
+    }
+
+    // Convert the game state to a format the Minimax algorithm can use
+    private int[][] convertToBoardState() {
+        int[][] boardState = new int[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (buttons[i * 3 + j].getText().equals("X")) {
+                    boardState[i][j] = 1;
+                } else if (buttons[i * 3 + j].getText().equals("O")) {
+                    boardState[i][j] = 2;
+                } else {
+                    boardState[i][j] = 0;
+                }
+            }
+        }
+        return boardState;
+    }
+
+    // Make the best move
+    private void makeMove(int bestMove) {
+        buttons[bestMove].setForeground(new Color(0, 0, 255));
+        buttons[bestMove].setText("O");
+        player1_turn = true;
+        textfield.setText("X turn");
+        check();
     }
 
     public static void main(String[] args) {
