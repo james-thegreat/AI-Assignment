@@ -27,6 +27,10 @@ public class TicTacToe implements ActionListener {
     // Minimax button
     JButton playAsMinimaxButton = new JButton("Play as Minimax");
     boolean isMinimaxMode = false;
+    
+    // depth buttons ---------------------------------------------
+    JButton[] depthButtons = new JButton[8];
+    int currentDepth = 1; // Default depth
 
     TicTacToe() {
         // MiniMax button setup
@@ -62,6 +66,13 @@ public class TicTacToe implements ActionListener {
             buttons[i].setBackground(new Color(220, 220, 220));
             buttons[i].setFocusable(false);
             buttons[i].addActionListener(this);
+        }
+        
+        // depth button ------------------------------------------------------
+        for (int i = 0; i < 8; i++) {
+            depthButtons[i] = new JButton("Depth " + (i + 1));
+            depthButtons[i].addActionListener(this);
+            right_panel.add(depthButtons[i]);
         }
 
         // Right panel setup
@@ -134,9 +145,17 @@ public class TicTacToe implements ActionListener {
         // Minimax AI's turn
         if (isMinimaxMode && !player1_turn) {
             int[][] boardState = convertToBoardState();
-            MiniMax minimax = new MiniMax(boardState);
-            int bestMove = minimax.getBestMove(); // You need to implement this method
-            makeMove(bestMove); // You need to implement this method
+            MiniMax minimax = new MiniMax(boardState, currentDepth);
+            int bestMove = minimax.getBestMove();
+            makeMove(bestMove);
+        }
+        
+        // depth ------------------------------------------------
+        for (int i = 0; i < 8; i++) {
+            if (e.getSource() == depthButtons[i]) {
+                currentDepth = i + 1;
+                textfield.setText("Depth set to " + currentDepth);
+            }
         }
     }
 

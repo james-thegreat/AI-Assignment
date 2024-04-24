@@ -2,13 +2,20 @@ package TicTacToe;
 
 public class MiniMax {
     private int[][] board;
-
-    public MiniMax(int[][] board) {
+    private int depthLimit;
+    
+    public MiniMax(int[][] board, int depthLimit) {
         this.board = board;
+        this.depthLimit = depthLimit;
     }
+
 
     public int minimax(int depth, boolean isMaximizingPlayer) {
         int score = evaluate();
+        
+        if (depth > depthLimit) {
+            return evaluate();
+        }
 
         if (score == 10)
             return score;
