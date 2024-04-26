@@ -139,7 +139,7 @@ public class TicTacToe implements ActionListener {
 
         // New game button action
         if (e.getSource() == new_Game_Button) {
-            new_Game();
+            new_Game(); 
         }
         // depth ------------------------------------------------
         for (int i = 0; i < 8; i++) {
@@ -150,12 +150,22 @@ public class TicTacToe implements ActionListener {
         }
 
         // Minimax AI's turn
+     // Inside your actionPerformed method, after a player makes a move
         if (isMinimaxMode && !player1_turn) {
+            // Update the board state in the MiniMax class
             int[][] boardState = convertToBoardState();
             MiniMax minimax = new MiniMax(boardState, currentDepth);
             int bestMove = minimax.getBestMove();
+            // Make the AI's move
             makeMove(bestMove);
+            // Update the GUI to reflect the AI's move
+            buttons[bestMove].setForeground(new Color(0, 0, 255));
+            buttons[bestMove].setText("O");
+            player1_turn = true; // Switch back to player 1's turn
+            textfield.setText("X turn");
+            check(); // Check for a win or draw
         }
+ 
         
     }
 

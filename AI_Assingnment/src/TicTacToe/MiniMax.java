@@ -9,23 +9,25 @@ public class MiniMax {
         this.depthLimit = depthLimit;
     }
 
-
-    public int minimax(int depth, boolean isMaximizingPlayer) {
-        int score = evaluate();
-        
-        if (depth > depthLimit) {
+    public int minimax(int depth, boolean isMaximizingPlayer, int alpha, int beta) {
+        // Base case: if the depth limit is reached or the game is over
+        if (depth >= depthLimit) {
             return evaluate();
         }
 
+        // If the game is over, return the score
+        int score = evaluate();
         if (score == 10)
             return score;
 
         if (score == -10)
             return score;
 
+        // If there are no moves left, return 0
         if (isMovesLeft() == false)
             return 0;
 
+        // Maximizing player's turn
         if (isMaximizingPlayer) {
             int best = -1000;
 
@@ -34,14 +36,21 @@ public class MiniMax {
                     if (board[i][j] == 0) {
                         board[i][j] = 1;
 
-                        best = Math.max(best, minimax(depth + 1, !isMaximizingPlayer));
+                        // Recursive call with updated alpha
+                        best = Math.max(best, minimax(depth + 1, !isMaximizingPlayer, alpha, beta));
 
                         board[i][j] = 0;
+                        // Update alpha with the best score found so far
+                        alpha = Math.max(alpha, best);
+                        // Prune the search tree if beta <= alpha
+                        if (beta <= alpha)
+                            return best;
                     }
                 }
             }
             return best;
         } else {
+            // Minimizing player's turn
             int best = 1000;
 
             for (int i = 0; i < 3; i++) {
@@ -49,9 +58,15 @@ public class MiniMax {
                     if (board[i][j] == 0) {
                         board[i][j] = 2;
 
-                        best = Math.min(best, minimax(depth + 1, !isMaximizingPlayer));
+                        // Recursive call with updated beta
+                        best = Math.min(best, minimax(depth + 1, !isMaximizingPlayer, alpha, beta));
 
                         board[i][j] = 0;
+                        // Update beta with the best score found so far
+                        beta = Math.min(beta, best);
+                        // Prune the search tree if beta <= alpha
+                        if (beta <= alpha)
+                            return best;
                     }
                 }
             }
@@ -67,7 +82,8 @@ public class MiniMax {
             for (int j = 0; j < 3; j++) {
                 if (board[i][j] == 0) {
                     board[i][j] = 2; // Assuming 2 represents the AI's move
-                    int moveVal = minimax(0, true);
+                    // Call minimax with initial alpha and beta values
+                    int moveVal = minimax(0, true, -1000, 1000);
                     board[i][j] = 0; // Undo the move
 
                     if (moveVal > bestVal) {
@@ -81,7 +97,6 @@ public class MiniMax {
         return bestMove;
     }
 
-
     private boolean isMovesLeft() {
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
@@ -91,6 +106,7 @@ public class MiniMax {
     }
 
     private int evaluate() {
+        // Check rows, columns, and diagonals for a win
         for (int row = 0; row < 3; row++) {
             if (board[row][0] == board[row][1] && board[row][1] == board[row][2]) {
                 if (board[row][0] == 1)
