@@ -15,7 +15,7 @@ public class TicTacToe implements ActionListener {
 
     // Side menu
     JPanel right_panel = new JPanel();
-    JButton[] right_buttons = new JButton[5];
+   
     JButton new_Game_Button = new JButton("New Game");
     JButton playAsXButton = new JButton("Play as X");
     JButton playAsOButton = new JButton("Play as O");
@@ -84,11 +84,7 @@ public class TicTacToe implements ActionListener {
         right_panel.add(playAsOButton);
         playAsXButton.addActionListener(this);
         playAsOButton.addActionListener(this);
-        for (int i = 0; i < 5; i++) {
-            right_buttons[i] = new JButton("Button " + (i + 1));
-            right_buttons[i].addActionListener(this);
-            right_panel.add(right_buttons[i]);
-        }
+       
         new_Game_Button.addActionListener(this);
         right_panel.add(new_Game_Button);
 
@@ -156,15 +152,23 @@ public class TicTacToe implements ActionListener {
             int[][] boardState = convertToBoardState();
             MiniMax minimax = new MiniMax(boardState, currentDepth);
             int bestMove = minimax.getBestMove();
-            // Make the AI's move
-            makeMove(bestMove);
-            // Update the GUI to reflect the AI's move
-            buttons[bestMove].setForeground(new Color(0, 0, 255));
-            buttons[bestMove].setText("O");
-            player1_turn = true; // Switch back to player 1's turn
-            textfield.setText("X turn");
-            check(); // Check for a win or draw
+            // Ensure the best move is valid
+            if (bestMove != -1) {
+                // Make the AI's move
+                int row = bestMove / 3;
+                int col = bestMove % 3;
+                buttons[row * 3 + col].setForeground(new Color(0, 0, 255));
+                buttons[row * 3 + col].setText("O");
+                // Update the board state to reflect the AI's move
+                boardState[row][col] = 2; // Assuming 2 is the AI's symbol
+                // Switch back to player 1's turn
+                player1_turn = true;
+                textfield.setText("X turn");
+                // Check for a win or draw
+                check();
+            }
         }
+
  
         
     }
