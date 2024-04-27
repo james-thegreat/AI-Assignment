@@ -15,7 +15,9 @@ public class TicTacToe implements ActionListener {
 
     // Side menu
     JPanel right_panel = new JPanel();
-   
+    // Add a variable to store the player's choice
+    boolean playerIsX = true; // Default to player being 'X'
+
     JButton new_Game_Button = new JButton("New Game");
     JButton playAsXButton = new JButton("Play as X");
     JButton playAsOButton = new JButton("Play as O");
@@ -106,10 +108,10 @@ public class TicTacToe implements ActionListener {
 
         // Player selection buttons action
         if (e.getSource() == playAsXButton) {
-            player1_turn = true;
+            playerIsX = true;
             textfield.setText("X turn");
         } else if (e.getSource() == playAsOButton) {
-            player1_turn = false;
+            playerIsX = false;
             textfield.setText("O turn");
         }
 
@@ -147,7 +149,7 @@ public class TicTacToe implements ActionListener {
 
         // Minimax AI's turn
      // Inside your actionPerformed method, after a player makes a move
-        if (isMinimaxMode && !player1_turn) {
+        if (isMinimaxMode && player1_turn != playerIsX) {
             // Update the board state in the MiniMax class
             int[][] boardState = convertToBoardState();
             MiniMax minimax = new MiniMax(boardState, currentDepth);
@@ -158,12 +160,12 @@ public class TicTacToe implements ActionListener {
                 int row = bestMove / 3;
                 int col = bestMove % 3;
                 buttons[row * 3 + col].setForeground(new Color(0, 0, 255));
-                buttons[row * 3 + col].setText("O");
+                buttons[row * 3 + col].setText(playerIsX ? "O" : "X");
                 // Update the board state to reflect the AI's move
-                boardState[row][col] = 2; // Assuming 2 is the AI's symbol
+                boardState[row][col] = playerIsX ? 2 : 1; // Assuming 2 is the AI's symbol
                 // Switch back to player 1's turn
-                player1_turn = true;
-                textfield.setText("X turn");
+                player1_turn = !player1_turn;
+                textfield.setText(playerIsX ? "X turn" : "O turn");
                 // Check for a win or draw
                 check();
             }
@@ -180,9 +182,10 @@ public class TicTacToe implements ActionListener {
             buttons[i].setEnabled(true);
             buttons[i].setBackground(new Color(220, 220, 220));
         }
-        player1_turn = true;
-        textfield.setText("X turn");
+        player1_turn = playerIsX; // Set the player's turn based on the player's choice
+        textfield.setText(playerIsX ? "X turn" : "O turn");
     }
+
 
     public void check() {
         // Define the winning conditions for rows, columns, and diagonals
