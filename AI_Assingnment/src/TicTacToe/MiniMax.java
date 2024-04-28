@@ -29,10 +29,10 @@ public class MiniMax {
 
         // Maximizing player's turn
         if (isMaximizingPlayer) {
-            int best = -1000;
-
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
+        	
+        	 int best = -1000;
+             for (int i = 0; i < board.length; i++) {
+                 for (int j = 0; j < board[0].length; j++) {
                     if (board[i][j] == 0) {
                         board[i][j] = 1;
 
@@ -50,11 +50,11 @@ public class MiniMax {
             }
             return best;
         } else {
+        	
             // Minimizing player's turn
-            int best = 1000;
-
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
+        	int best = 1000;
+            for (int i = 0; i < board.length; i++) {
+                for (int j = 0; j < board[0].length; j++) {
                     if (board[i][j] == 0) {
                         board[i][j] = 2;
 
@@ -73,13 +73,14 @@ public class MiniMax {
             return best;
         }
     }
+
     
     public int getBestMove() {
-        int bestVal = -1000;
+    	
+    	int bestVal = -1000;
         int bestMove = -1;
-
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
                 if (board[i][j] == 0) {
                     board[i][j] = 2; // Assuming 2 represents the AI's move
                     // Call minimax with initial alpha and beta values
@@ -87,7 +88,7 @@ public class MiniMax {
                     board[i][j] = 0; // Undo the move
 
                     if (moveVal > bestVal) {
-                        bestMove = i * 3 + j;
+                        bestMove = i * board[0].length + j;
                         bestVal = moveVal;
                     }
                 }

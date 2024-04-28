@@ -66,10 +66,20 @@ public class TicTacToe implements ActionListener {
         title_panel.setBounds(0, 0, 800, 100);
 
         // Button panel setup
-        button_panel.setLayout(new GridLayout(3, 3));
+        button_panel.setLayout(new GridLayout(boardSize, boardSize));
         button_panel.setBackground(new Color(150, 150, 150));
+        
+        // change board size 
+        right_panel.add(changeTo3x3Button);
+        right_panel.add(changeTo4x4Button);
+        changeTo3x3Button.addActionListener(this);
+        changeTo4x4Button.addActionListener(this);
+        
+        
+        button_panel.setLayout(new GridLayout(boardSize, boardSize));
 
-        for (int i = 0; i < 9; i++) {
+        buttons = new JButton[boardSize * boardSize];
+        for (int i = 0; i < boardSize * boardSize; i++) {
             buttons[i] = new JButton();
             button_panel.add(buttons[i]);
             buttons[i].setFont(new Font("MV Boli", Font.BOLD, 120));
@@ -98,15 +108,6 @@ public class TicTacToe implements ActionListener {
         new_Game_Button.addActionListener(this);
         right_panel.add(new_Game_Button);
         
-        // change board size 
-        right_panel.add(changeTo3x3Button);
-        right_panel.add(changeTo4x4Button);
-        changeTo3x3Button.addActionListener(this);
-        changeTo4x4Button.addActionListener(this);
-        
-        buttons = new JButton[boardSize * boardSize];
-
-        button_panel.setLayout(new GridLayout(boardSize, boardSize));
 
 
         // Modify the main frame layout to include the right panel
@@ -135,7 +136,7 @@ public class TicTacToe implements ActionListener {
         }
 
         // Game buttons action
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < boardSize * boardSize; i++) {
             if (e.getSource() == buttons[i]) {
                 if (buttons[i].getText().equals("")) {
                     if (player1_turn) {
@@ -188,10 +189,10 @@ public class TicTacToe implements ActionListener {
                 // Ensure the best move is valid
                 if (bestMove != -1) {
                     // Make the AI's move
-                    int row = bestMove / 3;
-                    int col = bestMove % 3;
-                    buttons[row * 3 + col].setForeground(new Color(0, 0, 255));
-                    buttons[row * 3 + col].setText(playerIsX ? "O" : "X");
+                	int row = bestMove / boardSize;
+                    int col = bestMove % boardSize;
+                    buttons[row * boardSize + col].setForeground(new Color(0, 0, 255));
+                    buttons[row * boardSize + col].setText(playerIsX ? "O" : "X");
                     // Update the board state to reflect the AI's move
                     boardState[row][col] = playerIsX ? 2 : 1; // Assuming 2 is the AI's symbol
                     // Switch back to player 1's turn
@@ -245,28 +246,34 @@ public class TicTacToe implements ActionListener {
 
     public void check() {
         // Define the winning conditions for rows, columns, and diagonals
-        int[][] winningConditions = {
-            {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, // Rows
-            {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, // Columns
-            {0, 4, 8}, {2, 4, 6} // Diagonals
-        };
+        int[][] winningConditions = getWinningConditions();
 
         // Check for X wins
         for (int[] condition : winningConditions) {
-            if (buttons[condition[0]].getText().equals("X") &&
-                buttons[condition[1]].getText().equals("X") &&
-                buttons[condition[2]].getText().equals("X")) {
-                xWins(condition[0], condition[1], condition[2]);
+            boolean xWins = true;
+            for (int index : condition) {
+                if (!buttons[index].getText().equals("X")) {
+                    xWins = false;
+                    break;
+                }
+            }
+            if (xWins) {
+                xWins(condition);
                 return; // Exit if a win is found
             }
         }
 
         // Check for O wins
         for (int[] condition : winningConditions) {
-            if (buttons[condition[0]].getText().equals("O") &&
-                buttons[condition[1]].getText().equals("O") &&
-                buttons[condition[2]].getText().equals("O")) {
-                oWins(condition[0], condition[1], condition[2]);
+            boolean oWins = true;
+            for (int index : condition) {
+                if (!buttons[index].getText().equals("O")) {
+                    oWins = false;
+                    break;
+                }
+            }
+            if (oWins) {
+                oWins(condition);
                 return; // Exit if a win is found
             }
         }
@@ -289,12 +296,29 @@ public class TicTacToe implements ActionListener {
     }
 
 
-    public void xWins(int a, int b, int c) {
-        buttons[a].setBackground(Color.GREEN);
-        buttons[b].setBackground(Color.GREEN);
-        buttons[c].setBackground(Color.GREEN);
+    private int[][] getWinningConditions() {
+        if (boardSize == 3) {
+            return new int[][] {
+                {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, // Rows
+                {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, // Columns
+                {0, 4, 8}, {2, 4, 6} // Diagonals
+            };
+        } else if (boardSize == 4) {
+            return new int[][] {
+                {0, 1, 2, 3}, {4, 5, 6, 7}, {8, 9, 10, 11}, {12, 13, 14, 15}, // Rows
+                {0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}, // Columns
+                {0, 5, 10, 15}, {3, 6, 9, 12} // Diagonals
+            };
+        }
+        return new int[0][0];
+    }
+    
+    public void xWins(int[] condition) {
+        for (int index : condition) {
+            buttons[index].setBackground(Color.GREEN);
+        }
 
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < boardSize * boardSize; i++) {
             buttons[i].setEnabled(false);
         }
         textfield.setText("X wins");
@@ -302,12 +326,12 @@ public class TicTacToe implements ActionListener {
         player_X_Wins.setText("Player X Wins: " + player_X_Score);
     }
 
-    public void oWins(int a, int b, int c) {
-        buttons[a].setBackground(Color.GREEN);
-        buttons[b].setBackground(Color.GREEN);
-        buttons[c].setBackground(Color.GREEN);
+    public void oWins(int[] condition) {
+        for (int index : condition) {
+            buttons[index].setBackground(Color.GREEN);
+        }
 
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < boardSize * boardSize; i++) {
             buttons[i].setEnabled(false);
         }
         textfield.setText("O wins");
@@ -315,14 +339,15 @@ public class TicTacToe implements ActionListener {
         player_O_Wins.setText("Player O Wins: " + player_O_Score);
     }
 
+
     // Convert the game state to a format the Minimax algorithm can use
     private int[][] convertToBoardState() {
-        int[][] boardState = new int[3][3];
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (buttons[i * 3 + j].getText().equals("X")) {
+        int[][] boardState = new int[boardSize][boardSize];
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                if (buttons[i * boardSize + j].getText().equals("X")) {
                     boardState[i][j] = 1;
-                } else if (buttons[i * 3 + j].getText().equals("O")) {
+                } else if (buttons[i * boardSize + j].getText().equals("O")) {
                     boardState[i][j] = 2;
                 } else {
                     boardState[i][j] = 0;
@@ -331,6 +356,7 @@ public class TicTacToe implements ActionListener {
         }
         return boardState;
     }
+
 
     // Make the best move
     private void makeMove(int bestMove) {
