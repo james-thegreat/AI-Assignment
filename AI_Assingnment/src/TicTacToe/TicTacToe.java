@@ -1,5 +1,7 @@
 package TicTacToe;
-
+import javax.swing.Timer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -41,6 +43,8 @@ public class TicTacToe implements ActionListener {
     
     //show the scores
     private boolean showScores = false;
+    
+    
 
 
 
@@ -154,12 +158,12 @@ public class TicTacToe implements ActionListener {
             if (e.getSource() == buttons[i]) {
                 if (buttons[i].getText().equals("")) {
                     if (player1_turn) {
-                        buttons[i].setForeground(new Color(255, 0, 0));
+                        buttons[i].setForeground(new Color(255, 0, 0)); // Set the foreground color to red for X
                         buttons[i].setText("X");
                         player1_turn = false;
                         textfield.setText("O turn");
                     } else {
-                        buttons[i].setForeground(new Color(0, 0, 255));
+                        buttons[i].setForeground(new Color(0, 0, 255)); // Set the foreground color to blue for O
                         buttons[i].setText("O");
                         player1_turn = true;
                         textfield.setText("X turn");
@@ -168,6 +172,7 @@ public class TicTacToe implements ActionListener {
                 }
             }
         }
+
 
         // New game button action
         if (e.getSource() == new_Game_Button) {
