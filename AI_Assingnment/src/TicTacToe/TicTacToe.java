@@ -47,6 +47,11 @@ public class TicTacToe implements ActionListener {
     JButton switchModeButton = new JButton("Switch to Player vs. Computer");
     boolean isPlayerVsComputer = false;
 
+    // MaxMax button
+    JButton playAsMaxMaxButton = new JButton("Play vs MaxMax");
+    boolean isMaxMaxMode = false;
+
+
 
 
 
@@ -60,6 +65,10 @@ public class TicTacToe implements ActionListener {
         // switch modes
         right_panel.add(switchModeButton);
         switchModeButton.addActionListener(this);
+        
+        // MaxMax button
+        right_panel.add(playAsMaxMaxButton);
+        playAsMaxMaxButton.addActionListener(this);
 
         // Main window setup
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -204,6 +213,42 @@ public class TicTacToe implements ActionListener {
                     break;
                 }
             }
+            
+         // MaxMax AI's turn
+            if (isMaxMaxMode && player1_turn != playerIsX) {
+                // Check if the game has ended
+                isGameEnded = true;
+                for (JButton button : buttons) {
+                    if (button.isEnabled()) {
+                        isGameEnded = false;
+                        break;
+                    }
+                }
+
+                // Proceed with the AI's move only if the game has not ended
+                if (!isGameEnded) {
+                    // Update the board state in the MaxMax class
+                    int[][] boardState = convertToBoardState();
+                    MaxMax maxmax = new MaxMax(boardState, currentDepth);
+                    int bestMove = maxmax.getBestMove();
+                    // Ensure the best move is valid
+                    if (bestMove != -1) {
+                        // Make the AI's move
+                        int row = bestMove / boardSize;
+                        int col = bestMove % boardSize;
+                        buttons[row * boardSize + col].setForeground(new Color(0, 0, 255));
+                        buttons[row * boardSize + col].setText(playerIsX ? "O" : "X");
+                        // Update the board state to reflect the AI's move
+                        boardState[row][col] = playerIsX ? 2 : 1; // Assuming 2 is the AI's symbol
+                        // Switch back to player 1's turn
+                        player1_turn = !player1_turn;
+                        textfield.setText(playerIsX ? "X turn" : "O turn");
+                        // Check for a win or draw
+                        check();
+                    }
+                }
+            }
+
 
             // Proceed with the AI's move only if the game has not ended
             if (!isGameEnded) {
@@ -250,7 +295,13 @@ public class TicTacToe implements ActionListener {
             new_Game();
         }
 
+        // MaxMax button
+        if (e.getSource() == playAsMaxMaxButton) {
+            isMaxMaxMode = true;
+            textfield.setText("MaxMax turn");
+        }
 
+        
         	updateBoard();
         
         }
@@ -343,6 +394,9 @@ public class TicTacToe implements ActionListener {
             player1_turn = playerIsX;
             textfield.setText(playerIsX ? "X turn" : "O turn");
         }
+        
+        isMaxMaxMode = false;
+        
     }
 
 
