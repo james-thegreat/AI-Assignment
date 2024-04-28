@@ -33,6 +33,14 @@ public class TicTacToe implements ActionListener {
     // depth buttons ---------------------------------------------
     JButton[] depthButtons = new JButton[8];
     int currentDepth = 1; // Default depth
+    
+    // change the bord size
+    JButton changeTo3x3Button = new JButton("3x3 Board");
+    JButton changeTo4x4Button = new JButton("4x4 Board");
+    int boardSize = 3; // Default to 3x3
+
+
+
 
     TicTacToe() {
         // MiniMax button setup
@@ -89,6 +97,17 @@ public class TicTacToe implements ActionListener {
        
         new_Game_Button.addActionListener(this);
         right_panel.add(new_Game_Button);
+        
+        // change board size 
+        right_panel.add(changeTo3x3Button);
+        right_panel.add(changeTo4x4Button);
+        changeTo3x3Button.addActionListener(this);
+        changeTo4x4Button.addActionListener(this);
+        
+        buttons = new JButton[boardSize * boardSize];
+
+        button_panel.setLayout(new GridLayout(boardSize, boardSize));
+
 
         // Modify the main frame layout to include the right panel
         frame.add(right_panel, BorderLayout.EAST);
@@ -149,39 +168,76 @@ public class TicTacToe implements ActionListener {
 
         // Minimax AI's turn
      // Inside your actionPerformed method, after a player makes a move
+     // Minimax AI's turn
         if (isMinimaxMode && player1_turn != playerIsX) {
-            // Update the board state in the MiniMax class
-            int[][] boardState = convertToBoardState();
-            MiniMax minimax = new MiniMax(boardState, currentDepth);
-            int bestMove = minimax.getBestMove();
-            // Ensure the best move is valid
-            if (bestMove != -1) {
-                // Make the AI's move
-                int row = bestMove / 3;
-                int col = bestMove % 3;
-                buttons[row * 3 + col].setForeground(new Color(0, 0, 255));
-                buttons[row * 3 + col].setText(playerIsX ? "O" : "X");
-                // Update the board state to reflect the AI's move
-                boardState[row][col] = playerIsX ? 2 : 1; // Assuming 2 is the AI's symbol
-                // Switch back to player 1's turn
-                player1_turn = !player1_turn;
-                textfield.setText(playerIsX ? "X turn" : "O turn");
-                // Check for a win or draw
-                check();
+            // Check if the game has ended
+            boolean isGameEnded = true;
+            for (JButton button : buttons) {
+                if (button.isEnabled()) {
+                    isGameEnded = false;
+                    break;
+                }
             }
+
+            // Proceed with the AI's move only if the game has not ended
+            if (!isGameEnded) {
+                // Update the board state in the MiniMax class
+                int[][] boardState = convertToBoardState();
+                MiniMax minimax = new MiniMax(boardState, currentDepth);
+                int bestMove = minimax.getBestMove();
+                // Ensure the best move is valid
+                if (bestMove != -1) {
+                    // Make the AI's move
+                    int row = bestMove / 3;
+                    int col = bestMove % 3;
+                    buttons[row * 3 + col].setForeground(new Color(0, 0, 255));
+                    buttons[row * 3 + col].setText(playerIsX ? "O" : "X");
+                    // Update the board state to reflect the AI's move
+                    boardState[row][col] = playerIsX ? 2 : 1; // Assuming 2 is the AI's symbol
+                    // Switch back to player 1's turn
+                    player1_turn = !player1_turn;
+                    textfield.setText(playerIsX ? "X turn" : "O turn");
+                    // Check for a win or draw
+                    check();
+                }
+            }
+          }
+        
+        // change board size
+        if (e.getSource() == changeTo3x3Button) {
+            boardSize = 3;
+            new_Game(); // Reset the game with the new board size
+        } else if (e.getSource() == changeTo4x4Button) {
+            boardSize = 4;
+            new_Game(); // Reset the game with the new board size
         }
 
- 
         
-    }
+        }
+
 
     // Reset game
     public void new_Game() {
-        for (int i = 0; i < 9; i++) {
-            buttons[i].setText("");
-            buttons[i].setEnabled(true);
+        // Clear the current buttons
+        button_panel.removeAll();
+
+        // Re-initialize the buttons array based on the new board size
+        buttons = new JButton[boardSize * boardSize];
+        for (int i = 0; i < boardSize * boardSize; i++) {
+            buttons[i] = new JButton();
+            button_panel.add(buttons[i]);
+            buttons[i].setFont(new Font("MV Boli", Font.BOLD, 120));
             buttons[i].setBackground(new Color(220, 220, 220));
+            buttons[i].setFocusable(false);
+            buttons[i].addActionListener(this);
         }
+
+        // Update the button panel layout
+        button_panel.setLayout(new GridLayout(boardSize, boardSize));
+
+        // Reset the game state
+        frame.revalidate(); // Re-layout the frame to accommodate the new board size
+        frame.repaint();
         player1_turn = playerIsX; // Set the player's turn based on the player's choice
         textfield.setText(playerIsX ? "X turn" : "O turn");
     }
@@ -214,7 +270,24 @@ public class TicTacToe implements ActionListener {
                 return; // Exit if a win is found
             }
         }
+
+        // Check for a draw
+        boolean isDraw = true;
+        for (JButton button : buttons) {
+            if (button.getText().equals("")) {
+                isDraw = false;
+                break;
+            }
+        }
+
+        if (isDraw) {
+            for (JButton button : buttons) {
+                button.setEnabled(false);
+            }
+            textfield.setText("It's a draw!");
+        }
     }
+
 
     public void xWins(int a, int b, int c) {
         buttons[a].setBackground(Color.GREEN);
