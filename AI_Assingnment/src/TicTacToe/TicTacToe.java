@@ -3,7 +3,6 @@ package TicTacToe;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 
 public class TicTacToe implements ActionListener {
@@ -44,7 +43,10 @@ public class TicTacToe implements ActionListener {
     //show the scores
     private boolean showScores = false;
     
-    
+    // switch modes
+    JButton switchModeButton = new JButton("Switch to Player vs. Computer");
+    boolean isPlayerVsComputer = false;
+
 
 
 
@@ -54,6 +56,10 @@ public class TicTacToe implements ActionListener {
         // MiniMax button setup
         right_panel.add(playAsMinimaxButton);
         playAsMinimaxButton.addActionListener(this);
+
+        // switch modes
+        right_panel.add(switchModeButton);
+        switchModeButton.addActionListener(this);
 
         // Main window setup
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -189,7 +195,7 @@ public class TicTacToe implements ActionListener {
         // Minimax AI's turn
      // Inside your actionPerformed method, after a player makes a move
      // Minimax AI's turn
-        if (isMinimaxMode && player1_turn != playerIsX) {
+        if (isPlayerVsComputer && player1_turn != playerIsX) {
             // Check if the game has ended
             boolean isGameEnded = true;
             for (JButton button : buttons) {
@@ -231,6 +237,19 @@ public class TicTacToe implements ActionListener {
             boardSize = 4;
             new_Game(); // Reset the game with the new board size
         }
+        
+        if (e.getSource() == switchModeButton) {
+            isPlayerVsComputer = !isPlayerVsComputer;
+            if (isPlayerVsComputer) {
+                switchModeButton.setText("Switch to Player vs. Player");
+                isMinimaxMode = true;
+            } else {
+                switchModeButton.setText("Switch to Player vs. Computer");
+                isMinimaxMode = false;
+            }
+            new_Game();
+        }
+
 
         	updateBoard();
         
@@ -316,6 +335,14 @@ public class TicTacToe implements ActionListener {
         frame.repaint();
         player1_turn = playerIsX; // Set the player's turn based on the player's choice
         textfield.setText(playerIsX ? "X turn" : "O turn");
+        
+        if (isPlayerVsComputer) {
+            player1_turn = playerIsX;
+            textfield.setText(playerIsX ? "X turn" : "Minimax turn");
+        } else {
+            player1_turn = playerIsX;
+            textfield.setText(playerIsX ? "X turn" : "O turn");
+        }
     }
 
 
