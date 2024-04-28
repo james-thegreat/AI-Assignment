@@ -105,10 +105,11 @@ public class MiniMax {
                     return true;
         return false;
     }
-
+    
+    // change the point system to give more points to seran moves
     private int evaluate() {
         // Check rows, columns, and diagonals for a win
-        for (int row = 0; row < 3; row++) {
+        for (int row = 0; row < board.length; row++) {
             if (board[row][0] == board[row][1] && board[row][1] == board[row][2]) {
                 if (board[row][0] == 1)
                     return +10;
@@ -117,7 +118,7 @@ public class MiniMax {
             }
         }
 
-        for (int col = 0; col < 3; col++) {
+        for (int col = 0; col < board[0].length; col++) {
             if (board[0][col] == board[1][col] && board[1][col] == board[2][col]) {
                 if (board[0][col] == 1)
                     return +10;
@@ -139,6 +140,90 @@ public class MiniMax {
             else if (board[0][2] == 2)
                 return -10;
         }
-        return 0;
+
+        // Check for potential winning lines and assign scores
+        int score = 0;
+
+        // Check rows
+        for (int row = 0; row < board.length; row++) {
+            int player1Count = 0;
+            int player2Count = 0;
+            int emptyCount = 0;
+
+            for (int col = 0; col < board[0].length; col++) {
+                if (board[row][col] == 1)
+                    player1Count++;
+                else if (board[row][col] == 2)
+                    player2Count++;
+                else
+                    emptyCount++;
+            }
+
+            if (player1Count == 2 && emptyCount == 1)
+                score += 5;
+            else if (player2Count == 2 && emptyCount == 1)
+                score -= 5;
+        }
+
+        // Check columns
+        for (int col = 0; col < board[0].length; col++) {
+            int player1Count = 0;
+            int player2Count = 0;
+            int emptyCount = 0;
+
+            for (int row = 0; row < board.length; row++) {
+                if (board[row][col] == 1)
+                    player1Count++;
+                else if (board[row][col] == 2)
+                    player2Count++;
+                else
+                    emptyCount++;
+            }
+
+            if (player1Count == 2 && emptyCount == 1)
+                score += 5;
+            else if (player2Count == 2 && emptyCount == 1)
+                score -= 5;
+        }
+
+        // Check diagonals
+        int player1Count = 0;
+        int player2Count = 0;
+        int emptyCount = 0;
+
+        for (int i = 0; i < board.length; i++) {
+            if (board[i][i] == 1)
+                player1Count++;
+            else if (board[i][i] == 2)
+                player2Count++;
+            else
+                emptyCount++;
+        }
+
+        if (player1Count == 2 && emptyCount == 1)
+            score += 5;
+        else if (player2Count == 2 && emptyCount == 1)
+            score -= 5;
+
+        player1Count = 0;
+        player2Count = 0;
+        emptyCount = 0;
+
+        for (int i = 0; i < board.length; i++) {
+            if (board[i][board.length - 1 - i] == 1)
+                player1Count++;
+            else if (board[i][board.length - 1 - i] == 2)
+                player2Count++;
+            else
+                emptyCount++;
+        }
+
+        if (player1Count == 2 && emptyCount == 1)
+            score += 5;
+        else if (player2Count == 2 && emptyCount == 1)
+            score -= 5;
+
+        return score;
     }
+
 }

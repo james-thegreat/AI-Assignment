@@ -38,6 +38,10 @@ public class TicTacToe implements ActionListener {
     JButton changeTo3x3Button = new JButton("3x3 Board");
     JButton changeTo4x4Button = new JButton("4x4 Board");
     int boardSize = 3; // Default to 3x3
+    
+    //show the scores
+    private boolean showScores = false;
+
 
 
 
@@ -116,6 +120,16 @@ public class TicTacToe implements ActionListener {
         title_panel.add(textfield);
         frame.add(title_panel, BorderLayout.NORTH);
         frame.add(button_panel);
+        
+        //show scores
+        JButton showScoresButton = new JButton("Show Scores");
+        showScoresButton.addActionListener(e -> {
+            showScores = !showScores;
+            showScoresButton.setText(showScores ? "Hide Scores" : "Show Scores");
+            updateBoard();
+        });
+        right_panel.add(showScoresButton);
+
     }
 
     @Override
@@ -213,8 +227,64 @@ public class TicTacToe implements ActionListener {
             new_Game(); // Reset the game with the new board size
         }
 
+        	updateBoard();
         
         }
+    
+    
+    // this gives the score
+    private void updateBoard() {
+        if (showScores) {
+            int[][] boardState = convertToBoardState();
+            MiniMax minimax = new MiniMax(boardState, currentDepth);
+
+            for (int i = 0; i < boardSize * boardSize; i++) {
+                if (buttons[i].isEnabled()) {
+                    int row = i / boardSize;
+                    int col = i % boardSize;
+                    boardState[row][col] = playerIsX ? 1 : 2;
+                    int score = minimax.minimax(0, !playerIsX, -1000, 1000);
+                    boardState[row][col] = 0;
+                    
+                    String buttonText = buttons[i].getText();
+                    if (!buttonText.isEmpty()) {
+                        buttons[i].setText("<html><center>" + buttonText + "<br><small>" + score + "</small></center></html>");
+                    } else {
+                        buttons[i].setText("<html><center><small>" + score + "</small></center></html>");
+                    }
+                }
+            }
+        } else {
+            for (JButton button : buttons) {
+                String buttonText = button.getText();
+                if (buttonText.contains("<html>")) {
+                    buttonText = buttonText.replaceAll("<[^>]*>", "");
+                    button.setText(buttonText.equals("X") || buttonText.equals("O") ? buttonText : "");
+                }
+            }
+        }
+        
+        // Make the buttons clickable again
+        for (JButton button : buttons) {
+            button.setEnabled(button.getText().isEmpty());
+        }
+    }
+
+
+
+
+    private String getScoreText(int score) {
+        if (score == 10) {
+            return "+10";
+        } else if (score == -10) {
+            return "-10";
+        } else {
+            return "0";
+        }
+    }
+
+
+
 
 
     // Reset game
@@ -316,6 +386,7 @@ public class TicTacToe implements ActionListener {
     public void xWins(int[] condition) {
         for (int index : condition) {
             buttons[index].setBackground(Color.GREEN);
+            buttons[index].setForeground(new Color(255, 0, 0)); // Set the foreground color to red for X
         }
 
         for (int i = 0; i < boardSize * boardSize; i++) {
@@ -329,6 +400,7 @@ public class TicTacToe implements ActionListener {
     public void oWins(int[] condition) {
         for (int index : condition) {
             buttons[index].setBackground(Color.GREEN);
+            buttons[index].setForeground(new Color(0, 0, 255)); // Set the foreground color to blue for O
         }
 
         for (int i = 0; i < boardSize * boardSize; i++) {
