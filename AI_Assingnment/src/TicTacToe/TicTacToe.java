@@ -56,12 +56,41 @@ public class TicTacToe implements ActionListener {
     JButton playMinimaxVsMaxMaxButton = new JButton("Minimax vs MaxMax");
     boolean isMinimaxVsMaxMaxMode = false;
 
-
-
+    // instructions to chose game mode
+    JLabel pick_player_mode = new JLabel("Pick who you want to play against");
+    
+    // pick depth label
+    JLabel depth_choice = new JLabel("chose how many moves a head the AI cheks ");
+    
+    // change bord size label
+    JLabel bord_size = new JLabel("choose bord size");
 
 
 
     TicTacToe() {
+
+        // Right panel setup
+
+        right_panel.setLayout(new BoxLayout(right_panel, BoxLayout.Y_AXIS));
+        right_panel.setBackground(new Color(150, 150, 150));
+        right_panel.add(player_O_Wins);
+        right_panel.add(player_X_Wins);
+        right_panel.add(player_O_Wins);
+        right_panel.add(player_X_Wins);
+        right_panel.add(playAsXButton);
+        right_panel.add(playAsOButton);
+        playAsXButton.addActionListener(this);
+        playAsOButton.addActionListener(this);
+
+        // pick player label
+        right_panel.add(pick_player_mode);
+
+        
+        
+        // switch modes
+        right_panel.add(switchModeButton);
+        switchModeButton.addActionListener(this);
+
         // MiniMax button setup
         right_panel.add(playAsMinimaxButton);
         playAsMinimaxButton.addActionListener(this);
@@ -69,15 +98,22 @@ public class TicTacToe implements ActionListener {
         // MaxMax vs Minimax button
         right_panel.add(playMinimaxVsMaxMaxButton);
         playMinimaxVsMaxMaxButton.addActionListener(this);
-
         
-        // switch modes
-        right_panel.add(switchModeButton);
-        switchModeButton.addActionListener(this);
+        
         
         // MaxMax button
         right_panel.add(playAsMaxMaxButton);
         playAsMaxMaxButton.addActionListener(this);
+
+        // New game button
+        new_Game_Button.addActionListener(this);
+        right_panel.add(new_Game_Button);
+
+        // player select
+        right_panel.add(playAsXButton);
+        right_panel.add(playAsOButton);
+        playAsXButton.addActionListener(this);
+        playAsOButton.addActionListener(this);
 
         // Main window setup
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -101,6 +137,9 @@ public class TicTacToe implements ActionListener {
         button_panel.setLayout(new GridLayout(boardSize, boardSize));
         button_panel.setBackground(new Color(150, 150, 150));
         
+
+        //choose bord size label
+        right_panel.add(bord_size);
         // change board size 
         right_panel.add(changeTo3x3Button);
         right_panel.add(changeTo4x4Button);
@@ -110,6 +149,8 @@ public class TicTacToe implements ActionListener {
         
         button_panel.setLayout(new GridLayout(boardSize, boardSize));
 
+        
+        
         buttons = new JButton[boardSize * boardSize];
         for (int i = 0; i < boardSize * boardSize; i++) {
             buttons[i] = new JButton();
@@ -120,6 +161,9 @@ public class TicTacToe implements ActionListener {
             buttons[i].addActionListener(this);
         }
         
+        // chose depth label
+        right_panel.add(depth_choice);
+
         // depth button ------------------------------------------------------
         for (int i = 0; i < 8; i++) {
             depthButtons[i] = new JButton("Depth " + (i + 1));
@@ -128,17 +172,12 @@ public class TicTacToe implements ActionListener {
         }
 
         // Right panel setup
+
         right_panel.setLayout(new BoxLayout(right_panel, BoxLayout.Y_AXIS));
         right_panel.setBackground(new Color(150, 150, 150));
-        right_panel.add(player_X_Wins);
-        right_panel.add(player_O_Wins);
-        right_panel.add(playAsXButton);
-        right_panel.add(playAsOButton);
-        playAsXButton.addActionListener(this);
-        playAsOButton.addActionListener(this);
-       
-        new_Game_Button.addActionListener(this);
-        right_panel.add(new_Game_Button);
+        
+        
+        
         
 
 
@@ -150,7 +189,7 @@ public class TicTacToe implements ActionListener {
         frame.add(button_panel);
         
         //show scores
-        JButton showScoresButton = new JButton("Show Scores");
+        JButton showScoresButton = new JButton("Show best moves");
         showScoresButton.addActionListener(e -> {
             showScores = !showScores;
             showScoresButton.setText(showScores ? "Hide Scores" : "Show Scores");
@@ -180,12 +219,12 @@ public class TicTacToe implements ActionListener {
         // Game buttons action
         for (int i = 0; i < boardSize * boardSize; i++) {
             if (e.getSource() == buttons[i]) {
-                if (buttons[i].getText().equals("")) {
+                if (buttons[i].getText().equals("") && player1_turn) {
                     if (player1_turn) {
                         buttons[i].setForeground(new Color(255, 0, 0)); // Set the foreground color to red for X
-                        buttons[i].setText("X");
+                        buttons[i].setText(playerIsX ? "X" : "O");
                         player1_turn = false;
-                        textfield.setText("O turn");
+                        
                     } else {
                         buttons[i].setForeground(new Color(0, 0, 255)); // Set the foreground color to blue for O
                         buttons[i].setText("O");
@@ -195,6 +234,21 @@ public class TicTacToe implements ActionListener {
                     check();
                 }
             }
+        }
+
+        // switch player buttons player vs plaer or player vs AI
+        if (e.getSource() == switchModeButton) {
+            isPlayerVsComputer = !isPlayerVsComputer;
+            if (isPlayerVsComputer) {
+                switchModeButton.setText("Switch to Player vs. Player");
+                isMinimaxMode = true;
+
+                
+            } else {
+                switchModeButton.setText("Switch to Player vs. Computer");
+                isMinimaxMode = false;
+            }
+            new_Game();
         }
 
 
@@ -209,9 +263,9 @@ public class TicTacToe implements ActionListener {
         		textfield.setText("Depth set to " + currentDepth);
         	}
         }
-
+        
         // Minimax AI's turn
-     // Inside your actionPerformed method, after a player makes a move
+        // Inside your actionPerformed method, after a player makes a move
      // Minimax AI's turn
         if (isPlayerVsComputer && player1_turn != playerIsX) {
             // Check if the game has ended
@@ -223,7 +277,7 @@ public class TicTacToe implements ActionListener {
                 }
             }
             
-         // MaxMax AI's turn
+            // MaxMax AI's turn
             if (isMaxMaxMode && player1_turn != playerIsX) {
                 // Check if the game has ended
                 isGameEnded = true;
@@ -257,8 +311,8 @@ public class TicTacToe implements ActionListener {
                     }
                 }
             }
-
-
+            
+            
             // Proceed with the AI's move only if the game has not ended
             if (!isGameEnded) {
                 // Update the board state in the MiniMax class
@@ -282,7 +336,9 @@ public class TicTacToe implements ActionListener {
                 }
             }
           }
+
         
+
         // change board size
         if (e.getSource() == changeTo3x3Button) {
             boardSize = 3;
@@ -292,17 +348,6 @@ public class TicTacToe implements ActionListener {
             new_Game(); // Reset the game with the new board size
         }
         
-        if (e.getSource() == switchModeButton) {
-            isPlayerVsComputer = !isPlayerVsComputer;
-            if (isPlayerVsComputer) {
-                switchModeButton.setText("Switch to Player vs. Player");
-                isMinimaxMode = true;
-            } else {
-                switchModeButton.setText("Switch to Player vs. Computer");
-                isMinimaxMode = false;
-            }
-            new_Game();
-        }
 
         // MaxMax button
         if (e.getSource() == playAsMaxMaxButton) {
@@ -445,11 +490,11 @@ public class TicTacToe implements ActionListener {
         // Update the button panel layout
         button_panel.setLayout(new GridLayout(boardSize, boardSize));
 
-        // Reset the game state
-        frame.revalidate(); // Re-layout the frame to accommodate the new board size
-        frame.repaint();
-        player1_turn = playerIsX; // Set the player's turn based on the player's choice
-        textfield.setText(playerIsX ? "X turn" : "O turn");
+        // // Reset the game state
+        // frame.revalidate(); // Re-layout the frame to accommodate the new board size
+        // frame.repaint();
+        // player1_turn = playerIsX; // Set the player's turn based on the player's choice
+        // textfield.setText(playerIsX ? "X turn" : "O turn");
         
         if (isPlayerVsComputer) {
             player1_turn = playerIsX;
