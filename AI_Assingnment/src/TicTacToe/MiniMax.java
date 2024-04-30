@@ -10,92 +10,45 @@ public class MiniMax {
     }
 
     public int minimax(int depth, boolean isMaximizingPlayer, int alpha, int beta) {
-        // Base case: if the depth limit is reached or the game is over
-        if (depth >= depthLimit) {
+        if (depth >= depthLimit || isGameOver()) {
             return evaluate();
         }
 
-        // If the game is over, return the score
-        int score = evaluate();
-        if (score == 10)
-            return score;
-
-        if (score == -10)
-            return score;
-
-        // If there are no moves left, return 0
-        if (isMovesLeft() == false)
-            return 0;
-
-        // Maximizing player's turn
         if (isMaximizingPlayer) {
-        	
-        	 int best = -1000;
-             for (int i = 0; i < board.length; i++) {
-                 for (int j = 0; j < board[0].length; j++) {
+            int best = Integer.MIN_VALUE;
+            for (int i = 0; i < board.length; i++) {
+                for (int j = 0; j < board[0].length; j++) {
                     if (board[i][j] == 0) {
                         board[i][j] = 1;
-
-                        // Recursive call with updated alpha
-                        best = Math.max(best, minimax(depth + 1, !isMaximizingPlayer, alpha, beta));
-
+                        int score = minimax(depth + 1, false, alpha, beta);
                         board[i][j] = 0;
-                        // Update alpha with the best score found so far
+                        best = Math.max(best, score);
                         alpha = Math.max(alpha, best);
-                        // Prune the search tree if beta <= alpha
-                        if (beta <= alpha)
-                            return best;
+                        if (beta <= alpha) {
+                            break;
+                        }
                     }
                 }
             }
             return best;
         } else {
-        	
-            // Minimizing player's turn
-        	int best = 1000;
+            int best = Integer.MAX_VALUE;
             for (int i = 0; i < board.length; i++) {
                 for (int j = 0; j < board[0].length; j++) {
                     if (board[i][j] == 0) {
                         board[i][j] = 2;
-
-                        // Recursive call with updated beta
-                        best = Math.min(best, minimax(depth + 1, !isMaximizingPlayer, alpha, beta));
-
+                        int score = minimax(depth + 1, true, alpha, beta);
                         board[i][j] = 0;
-                        // Update beta with the best score found so far
+                        best = Math.min(best, score);
                         beta = Math.min(beta, best);
-                        // Prune the search tree if beta <= alpha
-                        if (beta <= alpha)
-                            return best;
+                        if (beta <= alpha) {
+                            break;
+                        }
                     }
                 }
             }
             return best;
         }
-    }
-
-    
-    public int getBestMove() {
-    	
-    	int bestVal = -1000;
-        int bestMove = -1;
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[0].length; j++) {
-                if (board[i][j] == 0) {
-                    board[i][j] = 2; // Assuming 2 represents the AI's move
-                    // Call minimax with initial alpha and beta values
-                    int moveVal = minimax(0, true, -1000, 1000);
-                    board[i][j] = 0; // Undo the move
-
-                    if (moveVal > bestVal) {
-                        bestMove = i * board[0].length + j;
-                        bestVal = moveVal;
-                    }
-                }
-            }
-        }
-
-        return bestMove;
     }
 
     private boolean isMovesLeft() {
@@ -105,125 +58,58 @@ public class MiniMax {
                     return true;
         return false;
     }
+
+    private boolean isGameOver() {
+        // Check for a win or if all cells are filled
+        return evaluate() != 0 || !isMovesLeft();
+    }
     
-    // change the point system to give more points to seran moves
+    
     private int evaluate() {
-        // Check rows, columns, and diagonals for a win
-        for (int row = 0; row < board.length; row++) {
-            if (board[row][0] == board[row][1] && board[row][1] == board[row][2]) {
-                if (board[row][0] == 1)
-                    return +10;
-                else if (board[row][0] == 2)
-                    return -10;
-            }
-        }
-
-        for (int col = 0; col < board[0].length; col++) {
-            if (board[0][col] == board[1][col] && board[1][col] == board[2][col]) {
-                if (board[0][col] == 1)
-                    return +10;
-                else if (board[0][col] == 2)
-                    return -10;
-            }
-        }
-
-        if (board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
-            if (board[0][0] == 1)
-                return +10;
-            else if (board[0][0] == 2)
-                return -10;
-        }
-
-        if (board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
-            if (board[0][2] == 1)
-                return +10;
-            else if (board[0][2] == 2)
-                return -10;
-        }
-
-        // Check for potential winning lines and assign scores
         int score = 0;
-
-        // Check rows
-        for (int row = 0; row < board.length; row++) {
-            int player1Count = 0;
-            int player2Count = 0;
-            int emptyCount = 0;
-
-            for (int col = 0; col < board[0].length; col++) {
-                if (board[row][col] == 1)
-                    player1Count++;
-                else if (board[row][col] == 2)
-                    player2Count++;
-                else
-                    emptyCount++;
-            }
-
-            if (player1Count == 2 && emptyCount == 1)
-                score += 5;
-            else if (player2Count == 2 && emptyCount == 1)
-                score -= 5;
+        for (int i = 0; i < 3; i++) {
+            score += evaluateLine(board[i][0], board[i][1], board[i][2]); // Row
+            score += evaluateLine(board[0][i], board[1][i], board[2][i]); // Column
         }
-
-        // Check columns
-        for (int col = 0; col < board[0].length; col++) {
-            int player1Count = 0;
-            int player2Count = 0;
-            int emptyCount = 0;
-
-            for (int row = 0; row < board.length; row++) {
-                if (board[row][col] == 1)
-                    player1Count++;
-                else if (board[row][col] == 2)
-                    player2Count++;
-                else
-                    emptyCount++;
-            }
-
-            if (player1Count == 2 && emptyCount == 1)
-                score += 5;
-            else if (player2Count == 2 && emptyCount == 1)
-                score -= 5;
-        }
-
-        // Check diagonals
-        int player1Count = 0;
-        int player2Count = 0;
-        int emptyCount = 0;
-
-        for (int i = 0; i < board.length; i++) {
-            if (board[i][i] == 1)
-                player1Count++;
-            else if (board[i][i] == 2)
-                player2Count++;
-            else
-                emptyCount++;
-        }
-
-        if (player1Count == 2 && emptyCount == 1)
-            score += 5;
-        else if (player2Count == 2 && emptyCount == 1)
-            score -= 5;
-
-        player1Count = 0;
-        player2Count = 0;
-        emptyCount = 0;
-
-        for (int i = 0; i < board.length; i++) {
-            if (board[i][board.length - 1 - i] == 1)
-                player1Count++;
-            else if (board[i][board.length - 1 - i] == 2)
-                player2Count++;
-            else
-                emptyCount++;
-        }
-
-        if (player1Count == 2 && emptyCount == 1)
-            score += 5;
-        else if (player2Count == 2 && emptyCount == 1)
-            score -= 5;
-
+        score += evaluateLine(board[0][0], board[1][1], board[2][2]); // Diagonal
+        score += evaluateLine(board[0][2], board[1][1], board[2][0]); // Anti-diagonal
         return score;
     }
 
+    private int evaluateLine(int cell1, int cell2, int cell3) {
+        if (cell1 == cell2 && cell2 == cell3) {
+            if (cell1 == 1) {
+                return 100; // AI wins
+            } else if (cell1 == 2) {
+                return -100; // Opponent wins
+            }
+        }
+        if (cell1 == cell2 && cell3 == 0 || cell1 == cell3 && cell2 == 0 || cell2 == cell3 && cell1 == 0) {
+            if (cell1 == 1 || cell2 == 1 || cell3 == 1) {
+                return 10; // AI two in a row
+            } else if (cell1 == 2 || cell2 == 2 || cell3 == 2) {
+                return -10; // Opponent two in a row
+            }
+        }
+        return 0;
+    }
+
+    public int getBestMove() {
+        int bestVal = Integer.MIN_VALUE;
+        int bestMove = -1;
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                if (board[i][j] == 0) {
+                    board[i][j] = 1; // Simulate AI move
+                    int moveVal = minimax(0, false, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    board[i][j] = 0; // Undo move
+                    if (moveVal > bestVal) {
+                        bestMove = i * board[0].length + j;
+                        bestVal = moveVal;
+                    }
+                }
+            }
+        }
+        return bestMove;
+    }
 }

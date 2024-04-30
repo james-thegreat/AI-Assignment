@@ -28,7 +28,7 @@ public class TicTacToe implements ActionListener {
     int player_O_Score = 0;
 
     // Minimax button
-    JButton playAsMinimaxButton = new JButton("Play as Minimax");
+    JButton playAsMinimaxButton = new JButton("Player vs Minimax");
     boolean isMinimaxMode = false;
     
     // depth buttons ---------------------------------------------
@@ -95,15 +95,16 @@ public class TicTacToe implements ActionListener {
         right_panel.add(playAsMinimaxButton);
         playAsMinimaxButton.addActionListener(this);
         
+        // MaxMax button
+        right_panel.add(playAsMaxMaxButton);
+        playAsMaxMaxButton.addActionListener(this);
+
         // MaxMax vs Minimax button
         right_panel.add(playMinimaxVsMaxMaxButton);
         playMinimaxVsMaxMaxButton.addActionListener(this);
         
         
         
-        // MaxMax button
-        right_panel.add(playAsMaxMaxButton);
-        playAsMaxMaxButton.addActionListener(this);
 
         // New game button
         new_Game_Button.addActionListener(this);
@@ -217,14 +218,15 @@ public class TicTacToe implements ActionListener {
         }
 
         // Game buttons action
+       // Existing player move logic
         for (int i = 0; i < boardSize * boardSize; i++) {
             if (e.getSource() == buttons[i]) {
-                if (buttons[i].getText().equals("") && player1_turn) {
+                if (buttons[i].getText().equals("")) {
                     if (player1_turn) {
                         buttons[i].setForeground(new Color(255, 0, 0)); // Set the foreground color to red for X
-                        buttons[i].setText(playerIsX ? "X" : "O");
+                        buttons[i].setText("X");
                         player1_turn = false;
-                        
+                        textfield.setText("O turn");
                     } else {
                         buttons[i].setForeground(new Color(0, 0, 255)); // Set the foreground color to blue for O
                         buttons[i].setText("O");
@@ -233,6 +235,22 @@ public class TicTacToe implements ActionListener {
                     }
                     check();
                 }
+            }
+        }
+        
+        // AI move logic
+        if (isMinimaxMode && !player1_turn) {
+            int[][] boardState = convertToBoardState();
+            MiniMax minimax = new MiniMax(boardState, currentDepth);
+            int bestMove = minimax.getBestMove();
+            if (bestMove != -1) {
+                int row = bestMove / boardSize;
+                int col = bestMove % boardSize;
+                buttons[row * boardSize + col].setText(playerIsX ? "O" : "X");
+                buttons[row * boardSize + col].setEnabled(false);
+                player1_turn = true;  // Switch turn
+                textfield.setText("Player's turn");
+                check(); // Check for win or draw after AI move
             }
         }
 
@@ -517,54 +535,58 @@ public class TicTacToe implements ActionListener {
     public void check() {
         // Define the winning conditions for rows, columns, and diagonals
         int[][] winningConditions = getWinningConditions();
-
+    
         // Check for X wins
         for (int[] condition : winningConditions) {
-            boolean xWins = true;
-            for (int index : condition) {
-                if (!buttons[index].getText().equals("X")) {
-                    xWins = false;
-                    break;
-                }
-            }
-            if (xWins) {
+            if (checkWinCondition(condition, "X")) {
                 xWins(condition);
                 return; // Exit if a win is found
             }
         }
-
+    
         // Check for O wins
         for (int[] condition : winningConditions) {
-            boolean oWins = true;
-            for (int index : condition) {
-                if (!buttons[index].getText().equals("O")) {
-                    oWins = false;
-                    break;
-                }
-            }
-            if (oWins) {
+            if (checkWinCondition(condition, "O")) {
                 oWins(condition);
                 return; // Exit if a win is found
             }
         }
-
+    
         // Check for a draw
-        boolean isDraw = true;
-        for (JButton button : buttons) {
-            if (button.getText().equals("")) {
-                isDraw = false;
-                break;
-            }
-        }
-
-        if (isDraw) {
+        if (isDraw()) {
             for (JButton button : buttons) {
-                button.setEnabled(false);
+                button.setEnabled(false); // Disable all buttons if it's a draw
             }
             textfield.setText("It's a draw!");
         }
     }
-
+    
+    private boolean checkWinCondition(int[] condition, String player) {
+        for (int index : condition) {
+            if (!buttons[index].getText().equals(player)) {
+                return false; // If any button does not match the player, return false
+            }
+        }
+        return true; // All buttons in the condition match the player
+    }
+    
+    private boolean isDraw() {
+        for (JButton button : buttons) {
+            if (button.getText().equals("")) {
+                return false; // If any button is still empty, it's not a draw
+            }
+        }
+        return true; // No empty buttons, and no winner found
+    }
+    
+    public void resetGame() {
+        for (JButton button : buttons) {
+            button.setText("");
+            button.setEnabled(true);
+        }
+        player1_turn = true;  // Reset to player 1's turn
+        textfield.setText("Start Game");
+    }
 
     private int[][] getWinningConditions() {
         if (boardSize == 3) {
@@ -597,6 +619,8 @@ public class TicTacToe implements ActionListener {
         player_X_Wins.setText("Player X Wins: " + player_X_Score);
     }
 
+    
+
     public void oWins(int[] condition) {
         for (int index : condition) {
             buttons[index].setBackground(Color.GREEN);
@@ -614,20 +638,22 @@ public class TicTacToe implements ActionListener {
 
     // Convert the game state to a format the Minimax algorithm can use
     private int[][] convertToBoardState() {
-        int[][] boardState = new int[boardSize][boardSize];
-        for (int i = 0; i < boardSize; i++) {
-            for (int j = 0; j < boardSize; j++) {
-                if (buttons[i * boardSize + j].getText().equals("X")) {
-                    boardState[i][j] = 1;
-                } else if (buttons[i * boardSize + j].getText().equals("O")) {
-                    boardState[i][j] = 2;
-                } else {
-                    boardState[i][j] = 0;
-                }
+    int[][] boardState = new int[boardSize][boardSize];
+    for (int i = 0; i < boardSize; i++) {
+        for (int j = 0; j < boardSize; j++) {
+            JButton btn = buttons[i * boardSize + j];
+            if (btn.getText().equals("X")) {
+                boardState[i][j] = 1;  // Assuming '1' is the representation for 'X'
+            } else if (btn.getText().equals("O")) {
+                boardState[i][j] = 2;  // Assuming '2' is the representation for 'O'
+            } else {
+                boardState[i][j] = 0;  // Empty cell
             }
         }
-        return boardState;
     }
+    return boardState;
+}
+
 
 
     // Make the best move
