@@ -98,3 +98,4 @@ def play_game():
         print("Player wins!") if sum(state) % 2 == 0 else print("Computer wins!")
 
 play_game() 
+#test git
