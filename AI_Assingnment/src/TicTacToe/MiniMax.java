@@ -3,10 +3,12 @@ package TicTacToe;
 public class MiniMax {
     private int[][] board;
     private int depthLimit;
-    
-    public MiniMax(int[][] board, int depthLimit) {
+    private int winLength; // Length needed to win
+
+    public MiniMax(int[][] board, int depthLimit, int winLength) {
         this.board = board;
         this.depthLimit = depthLimit;
+        this.winLength = winLength;
     }
 
     public int minimax(int depth, boolean isMaximizingPlayer, int alpha, int beta) {
@@ -52,10 +54,11 @@ public class MiniMax {
     }
 
     private boolean isMovesLeft() {
-        for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 3; j++)
-                if (board[i][j] == 0)
-                    return true;
+        for (int[] row : board) {
+            for (int cell : row) {
+                if (cell == 0) return true;
+            }
+        }
         return false;
     }
 

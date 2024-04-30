@@ -13,7 +13,7 @@ public class TicTacToe implements ActionListener {
     JLabel textfield = new JLabel();
     JButton[] buttons = new JButton[9];
     boolean player1_turn;
-
+    int winLength = 3;
     // Side menu
     JPanel right_panel = new JPanel();
     // Add a variable to store the player's choice
@@ -345,7 +345,7 @@ public class TicTacToe implements ActionListener {
             if (!isGameEnded) {
                 // Update the board state in the MiniMax class
                 int[][] boardState = convertToBoardState();
-                MiniMax minimax = new MiniMax(boardState, currentDepth);
+                MiniMax minimax = new MiniMax(boardState, currentDepth, winLength);
                 int bestMove = minimax.getBestMove();
                 // Ensure the best move is valid
                 if (bestMove != -1) {
@@ -370,9 +370,11 @@ public class TicTacToe implements ActionListener {
         // change board size
         if (e.getSource() == changeTo3x3Button) {
             boardSize = 3;
+            winLength = 3; // Set win length for 3x3 board
             new_Game(); // Reset the game with the new board size
         } else if (e.getSource() == changeTo4x4Button) {
             boardSize = 4;
+            winLength = 4; // Set win length for 4x4 board
             new_Game(); // Reset the game with the new board size
         }
         
@@ -384,12 +386,15 @@ public class TicTacToe implements ActionListener {
         }
         
         // MaxMax vs Minimax button
-        // MaxMax vs Minimax button
-        if (e.getSource() == playMinimaxVsMaxMaxButton) {
-            isMinimaxVsMaxMaxMode = true;
-            isPlayerVsComputer = true;
-            new_Game();
-        }
+           if (e.getSource() == playMinimaxVsMaxMaxButton) {
+        isMinimaxVsMaxMaxMode = true;
+        isPlayerVsComputer = false; // Disable other modes
+        isMinimaxMode = false;
+        isMaxMaxMode = false;
+        new_Game(); // Reset the game for AI vs AI
+        triggerAiMove(); // Start AI vs AI game by triggering the first move
+    }
+
         
      // Minimax vs MaxMax gameplay
         if (isMinimaxVsMaxMaxMode) {
@@ -409,7 +414,7 @@ public class TicTacToe implements ActionListener {
 
                 // Minimax's turn
                 if (player1_turn) {
-                    MiniMax minimax = new MiniMax(boardState, currentDepth);
+                    MiniMax minimax = new MiniMax(boardState, currentDepth, winLength);
                     int bestMove = minimax.getBestMove();
                     // Make Minimax's move
                     int row = bestMove / boardSize;
@@ -443,10 +448,58 @@ public class TicTacToe implements ActionListener {
         
         }
     
-    
+        private void makeMinimaxMove() {
+            int[][] boardState = convertToBoardState();
+            MiniMax minimax = new MiniMax(boardState, currentDepth, winLength);
+            int bestMove = minimax.getBestMove();
+            if (bestMove != -1) {
+                int row = bestMove / boardSize;
+                int col = bestMove % boardSize;
+                buttons[row * boardSize + col].setText("X");
+                buttons[row * boardSize + col].setForeground(new Color(255, 0, 0));
+                player1_turn = false;  // Switch turn to MaxMax
+                textfield.setText("MaxMax turn");
+                check();
+                if (!checkGameEnd()) {
+                    makeMaxMaxMove();  // Trigger MaxMax move if game not ended
+                }
+            }
+        }
+        
+        private void makeMaxMaxMove() {
+            int[][] boardState = convertToBoardState();
+            MaxMax maxmax = new MaxMax(boardState, currentDepth);
+            int bestMove = maxmax.getBestMove();
+            if (bestMove != -1) {
+                int row = bestMove / boardSize;
+                int col = bestMove % boardSize;
+                buttons[row * boardSize + col].setText("O");
+                buttons[row * boardSize + col].setForeground(new Color(0, 0, 255));
+                player1_turn = true;  // Switch turn back to Minimax
+                textfield.setText("Minimax turn");
+                check();
+                if (!checkGameEnd()) {
+                    makeMinimaxMove();  // Trigger Minimax move if game not ended
+                }
+            }
+        }
+        
+        private boolean checkGameEnd() {
+            if (isDraw() || checkWinCondition(getWinningConditions(), "X") || checkWinCondition(getWinningConditions(), "O")) {
+                return true; // Game ends if there's a draw or a win
+            }
+            return false;
+        }
+        
+        private void triggerAiMove() {
+            makeMinimaxMove();  // Start with Minimax
+        }
+        
+
         private void makeAIMove() {
             int[][] boardState = convertToBoardState();
-            MiniMax minimax = new MiniMax(boardState, currentDepth);
+            // Update to include winLength
+            MiniMax minimax = new MiniMax(boardState, currentDepth, winLength);
             int bestMove = minimax.getBestMove();
             if (bestMove != -1) {
                 int row = bestMove / boardSize;
@@ -459,13 +512,29 @@ public class TicTacToe implements ActionListener {
             }
         }
         
+        private boolean checkWinCondition(int[][] conditions, String player) {
+            for (int[] condition : conditions) {
+                boolean win = true;
+                for (int pos : condition) {
+                    if (!buttons[pos].getText().equals(player)) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         
 
     // this gives the score
     private void updateBoard() {
         if (showScores) {
             int[][] boardState = convertToBoardState();
-            MiniMax minimax = new MiniMax(boardState, currentDepth);
+            MiniMax minimax = new MiniMax(boardState, currentDepth, winLength);
 
             for (int i = 0; i < boardSize * boardSize; i++) {
                 if (buttons[i].isEnabled()) {
@@ -517,15 +586,28 @@ public class TicTacToe implements ActionListener {
 
 
     // Reset game
+   // In your TicTacToe class, update the new_Game method to handle different board sizes
     public void new_Game() {
-        for (JButton button : buttons) {
-            button.setText("");
-            button.setEnabled(true);
-            button.setBackground(new Color(220, 220, 220));
+        button_panel.removeAll(); // Remove all existing buttons
+        button_panel.setLayout(new GridLayout(boardSize, boardSize)); // Set layout based on new board size
+
+        buttons = new JButton[boardSize * boardSize]; // Reinitialize the buttons array based on new size
+        for (int i = 0; i < buttons.length; i++) {
+            buttons[i] = new JButton();
+            button_panel.add(buttons[i]);
+            buttons[i].setFont(new Font("MV Boli", Font.BOLD, 120));
+            buttons[i].setBackground(new Color(220, 220, 220));
+            buttons[i].setFocusable(false);
+            buttons[i].addActionListener(this);
         }
-        player1_turn = true;  // Always let the player start the new game
-        textfield.setText(playerIsX ? "X turn" : "O turn");
+
+        frame.validate(); // Refresh the frame to display new layout
+        frame.repaint();
+
+        resetGame(); // Reset game states
     }
+
+    
     
 
 
